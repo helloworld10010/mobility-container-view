@@ -1,0 +1,3 @@
+include ':mobility-view'
+include ':app'
+rootProject.name = "MobilityContainerView"
