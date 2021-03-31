@@ -10,6 +10,7 @@
         android:layout_height="150dp"
         android:background="#fda"
         >
+        <!--想移动的控件放它下边-->
         <Button
             android:id="@+id/btn"
             android:layout_width="wrap_content"
