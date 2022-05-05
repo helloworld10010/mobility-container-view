@@ -4,17 +4,21 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.widget.FrameLayout
+import timber.log.Timber
+import kotlin.math.abs
+import kotlin.math.max
 
 class MobilityContainerView(context: Context, attributeSet: AttributeSet) : FrameLayout(context,attributeSet) {
 
-  var downX = 0f
-  var downY = 0f
+  private val mTouchSlop = 50f
   var lastX = 0f
   var lastY = 0f
   override fun onTouchEvent(event: MotionEvent): Boolean {
+    Timber.d("onTouchEvent:${event.action}")
     when (event.action) {
       MotionEvent.ACTION_DOWN -> {
-
+        lastX = event.rawX
+        lastY = event.rawY
       }
       MotionEvent.ACTION_MOVE -> {
         val moveX = event.rawX - lastX
@@ -31,45 +35,31 @@ class MobilityContainerView(context: Context, attributeSet: AttributeSet) : Fram
     return true
   }
 
-  var interceptDownX = 0f
-  var interceptDownY = 0f
-  var accMoveX = 0f
-  var accMoveY = 0f
+  private var accMoveX = 0f
+  private var accMoveY = 0f
 
   override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+    Timber.d("onInterceptTouchEvent:${ev.action}")
     when(ev.action){
       MotionEvent.ACTION_DOWN -> {
+        lastX = ev.rawX
+        lastY = ev.rawY
         accMoveX = 0f
         accMoveY = 0f
       }
 
       MotionEvent.ACTION_MOVE -> {
-
-        accMoveX += ev.rawX
-        accMoveY += ev.rawY
-        val max = Math.max(accMoveX, accMoveY)
-        return max >= 7500f
+        accMoveX += abs(ev.rawX - lastX)
+        accMoveY += abs(ev.rawY - lastY)
+        lastX = ev.rawX
+        lastY = ev.rawY
+        val max = max(accMoveX, accMoveY)
+        return max >= mTouchSlop
       }
       MotionEvent.ACTION_UP -> {
       }
     }
     return false
-  }
-
-  override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-    when(ev.action){
-      MotionEvent.ACTION_DOWN->{
-        lastX = ev.rawX
-        lastY = ev.rawY
-      }
-      MotionEvent.ACTION_MOVE->{
-        accMoveX += ev.x
-        accMoveY += ev.y
-      }
-      MotionEvent.ACTION_UP->{
-      }
-    }
-    return super.dispatchTouchEvent(ev)
   }
 
   override fun performClick(): Boolean {
